@@ -1,0 +1,4 @@
+rl_fish_env/*
+mock-up.png
+*.pycache
+.streamlit
