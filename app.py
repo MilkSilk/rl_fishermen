@@ -38,8 +38,8 @@ def render_pond(pond_id, fisherman_col1, pond_col, fisherman_col2):
 col1, col2 = st.columns(2)
 fisherman_col1, pond_col1, fisherman_col2, _, \
     fisherman_col3, pond_col2, fisherman_col4 = st.columns([1, 3, 1, 1, 1, 3, 1])
-render_pond(pond_id, fisherman_col1, pond_col1, fisherman_col2)
-render_pond(pond_id, fisherman_col3, pond_col2, fisherman_col4)
+render_pond(1, fisherman_col1, pond_col1, fisherman_col2)
+render_pond(2, fisherman_col3, pond_col2, fisherman_col4)
 
-render_pond(pond_id, fisherman_col1, pond_col1, fisherman_col2)
-render_pond(pond_id, fisherman_col3, pond_col2, fisherman_col4)
+render_pond(3, fisherman_col1, pond_col1, fisherman_col2)
+render_pond(4, fisherman_col3, pond_col2, fisherman_col4)
