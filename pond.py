@@ -1,14 +1,13 @@
 import random
 
 class Pond:
-    def __init__(self, initial_fish_supply=None):
+    def __init__(self, pond_id, initial_fish_supply=None):
+        self.pond_id = pond_id
         self.fish_supply = 0
         self.change_fish_supply(initial_fish_supply) # 0-25
-        self.set_fish_indicator_and_catch_difficulty()
     
-    def serve_fisherman(self):
-        fisherman_luck = random.random()
-        if fisherman_luck > self.fish_catch_difficulty:
+    def serve_fisherman(self, fisherman_luck):
+        if fisherman_luck > self.fish_catch_difficulty and self.fish_supply > 0:
             self.change_fish_supply(-1)
             return 1
         else:
@@ -21,8 +20,12 @@ class Pond:
 
     def breed_fish(self):
         breeding_luck = random.random()
-        new_fish = (self.fish_supply * breeding_luck) // 3
+        new_fish = (self.fish_supply * breeding_luck) // 2
         self.change_fish_supply(new_fish)
+
+    def __str__(self):
+        return f'Pond{self.pond_id}. Fish supply: {self.fish_supply}. ' + \
+          f'Indicator: {self.fish_indicator}. Difficulty: {self.fish_catch_difficulty}'
         
 
     

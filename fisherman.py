@@ -1,9 +1,26 @@
+import streamlit as st
+import random
+
 class Fisherman:
-    def __init__(self, policy=None, pond=None):
+    def __init__(self, fisherman_id, policy=None, ponds=None, pond_id=0):
+        self.fisherman_id = fisherman_id
         self.policy = policy
-        self.pond = pond
+        self.ponds = ponds
+        self.pond = ponds[pond_id]
         self.fish = 0
 
     def action(self):
-        self.fish += self.pond.serve_fisherman()
+        fisherman_luck = random.random()
+        self.fish += self.pond.serve_fisherman(fisherman_luck)
+        self.pond = self.ponds[self.policy()]
+
+    def render_fisherman(self, pond_to_render_at, container=st):
+        if self.pond == pond_to_render_at:
+            im_source = f'images/fishermen/{self.fisherman_id}.jpg'
+        else:
+            im_source = 'images/fishermen/empty.jpg'
+        container.image(im_source)
+
+    def __str__(self):
+        return f'Fisherman{self.fisherman_id}. Sitting at pond {self.pond}, has {self.fish} fish'
 
