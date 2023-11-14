@@ -1,4 +1,4 @@
-import streamlit as st # streamlit run app.py --server.port 8501 --server.runOnSave True
+import streamlit as st 
 import random
 import time
 import pandas as pd
@@ -6,9 +6,9 @@ import plotly.express as px
 
 from fisherman import Fisherman
 from pond import Pond
-
+# streamlit run app.py --server.port 8501 --server.runOnSave True
 debug = False
-n_turns = 250
+n_turns = 50
 
 if 'ponds' not in st.session_state:
     st.session_state['ponds'] = []
@@ -81,6 +81,7 @@ if st.session_state['turn'] % (n_turns // 1) == 0:
     render_pond(2, fisherman_col1, pond_col1, fisherman_col2)
     render_pond(3, fisherman_col3, pond_col2, fisherman_col4)
     st.markdown("""---""")
+    time.sleep(5)
 
 for fisherman in st.session_state['fishermen']:
     fisherman.action()
@@ -94,7 +95,6 @@ for pond in st.session_state['ponds']:
 
 st.session_state['turn'] += 1
 if st.session_state['turn'] <= n_turns:
-    # time.sleep(2)
     st.rerun()
 
 fishermen_data = []
