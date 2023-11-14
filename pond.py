@@ -15,12 +15,12 @@ class Pond:
         
     def change_fish_supply(self, change_number):
         self.fish_supply += change_number
-        self.fish_indicator = self.fish_supply // 5
+        self.fish_indicator = int(self.fish_supply // 5)
         self.fish_catch_difficulty = 0.75 - self.fish_supply / 50
 
     def breed_fish(self):
         breeding_luck = random.random()
-        new_fish = (self.fish_supply * breeding_luck) // 2
+        new_fish = (self.fish_supply * breeding_luck) // 4
         self.change_fish_supply(new_fish)
 
     def __str__(self):

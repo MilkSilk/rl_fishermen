@@ -71,7 +71,7 @@ def render_pond(pond_id, fisherman_col1, pond_col, fisherman_col2):
 fisherman_col1, pond_col1, fisherman_col2, _, \
     fisherman_col3, pond_col2, fisherman_col4 = st.columns([1, 3, 1, 1, 1, 3, 1])
 
-if st.session_state['turn'] % (n_turns // 1) == 0:
+if st.session_state['turn'] % (n_turns // 1) == 0 or st.session_state['turn'] > n_turns:
     st.text(st.session_state['turn'])
     fisherman_col1, pond_col1, fisherman_col2, _, \
         fisherman_col3, pond_col2, fisherman_col4 = st.columns([1, 3, 1, 1, 1, 3, 1])
@@ -92,6 +92,7 @@ for pond in st.session_state['ponds']:
         'fish_supply': pond.fish_supply
     }
     st.session_state['ponds_supply'].append(pond_state)
+    pond.breed_fish()
 
 st.session_state['turn'] += 1
 if st.session_state['turn'] <= n_turns:
@@ -104,4 +105,5 @@ for fisherman in st.session_state['fishermen']:
 df_fishermen = pd.DataFrame(fishermen_data)
 df_ponds = pd.DataFrame(st.session_state['ponds_supply'])
 st.plotly_chart(px.histogram(df_fishermen, x='fish_caught'))
+st.metric('Average number of fish caught', df_fishermen['fish_caught'].mean().round(2))
 st.plotly_chart(px.line(df_ponds, x='turn', y='fish_supply', color='pond_id'))
