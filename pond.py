@@ -21,7 +21,7 @@ class Pond:
 
     def breed_fish(self):
         breeding_luck = random.random()
-        new_fish = self.fish_supply * breeding_luck // 3
+        new_fish = (self.fish_supply * breeding_luck) // 3
         self.change_fish_supply(new_fish)
         
 
