@@ -84,6 +84,7 @@ if st.session_state['turn'] % (n_turns // 1) == 0 or st.session_state['turn'] > 
     time.sleep(5)
 
 for fisherman in st.session_state['fishermen']:
+    # fisherman.policy = lambda: action[fisherman.fisherman_id]
     fisherman.action()
 
 for pond in st.session_state['ponds']:

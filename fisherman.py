@@ -8,11 +8,17 @@ class Fisherman:
         self.ponds = ponds
         self.pond = ponds[pond_id]
         self.fish = 0
+        self.caught_fish = 0
 
     def action(self):
-        fisherman_luck = random.random()
-        self.fish += self.pond.serve_fisherman(fisherman_luck)
-        self.pond = self.ponds[self.policy()]
+        action = self.policy()
+        if action == 4:
+            return
+        else:
+            self.pond = self.ponds[action]
+            fisherman_luck = random.random()
+            self.caught_fish = self.pond.serve_fisherman(fisherman_luck)
+            self.fish += self.caught_fish
 
     def render_fisherman(self, pond_to_render_at, container=st):
         if self.pond == pond_to_render_at:
@@ -22,5 +28,5 @@ class Fisherman:
         container.image(im_source)
 
     def __str__(self):
-        return f'Fisherman{self.fisherman_id}. Sitting at pond {self.pond}, has {self.fish} fish'
+        return f'Fisherman{self.fisherman_id}. Fishing at pond {self.pond}, has {self.fish} fish'
 

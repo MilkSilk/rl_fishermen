@@ -15,7 +15,7 @@ class Pond:
         
     def change_fish_supply(self, change_number):
         self.fish_supply += change_number
-        self.fish_indicator = int(self.fish_supply // 5)
+        self.fish_indicator = min(int(self.fish_supply // 5), 5)
         self.fish_catch_difficulty = 0.75 - self.fish_supply / 50
 
     def breed_fish(self):
