@@ -8,7 +8,8 @@ from fisherman import Fisherman
 from pond import Pond
 # streamlit run app.py --server.port 8501 --server.runOnSave True
 debug = False
-n_turns = 50
+n_steps = 50
+n_renders_per_episode = 0
 
 if 'ponds' not in st.session_state:
     st.session_state['ponds'] = []
@@ -28,8 +29,8 @@ if 'fishermen' not in st.session_state:
         if debug:
             st.text(new_fisherman)
 
-if 'turn' not in st.session_state:
-    st.session_state['turn'] = 0
+if 'step_no' not in st.session_state:
+    st.session_state['step_no'] = 0
 if 'ponds_supply' not in st.session_state:
     st.session_state['ponds_supply'] = []
 
@@ -71,17 +72,19 @@ def render_pond(pond_id, fisherman_col1, pond_col, fisherman_col2):
 fisherman_col1, pond_col1, fisherman_col2, _, \
     fisherman_col3, pond_col2, fisherman_col4 = st.columns([1, 3, 1, 1, 1, 3, 1])
 
-# if st.session_state['turn'] % (n_turns // 1) == 0 or st.session_state['turn'] > n_turns:
-#     st.text(st.session_state['turn'])
-#     fisherman_col1, pond_col1, fisherman_col2, _, \
-#         fisherman_col3, pond_col2, fisherman_col4 = st.columns([1, 3, 1, 1, 1, 3, 1])
-#     render_pond(0, fisherman_col1, pond_col1, fisherman_col2)
-#     render_pond(1, fisherman_col3, pond_col2, fisherman_col4)
+if (n_renders_per_episode != 0) and \
+   (st.session_state['step_no'] % (n_steps // n_renders_per_episode) == 0) or \
+   (st.session_state['step_no'] > n_steps):
+    st.text(st.session_state['step_no'])
+    fisherman_col1, pond_col1, fisherman_col2, _, \
+        fisherman_col3, pond_col2, fisherman_col4 = st.columns([1, 3, 1, 1, 1, 3, 1])
+    render_pond(0, fisherman_col1, pond_col1, fisherman_col2)
+    render_pond(1, fisherman_col3, pond_col2, fisherman_col4)
 
-#     render_pond(2, fisherman_col1, pond_col1, fisherman_col2)
-#     render_pond(3, fisherman_col3, pond_col2, fisherman_col4)
-#     st.markdown("""---""")
-#     time.sleep(5)
+    render_pond(2, fisherman_col1, pond_col1, fisherman_col2)
+    render_pond(3, fisherman_col3, pond_col2, fisherman_col4)
+    st.markdown("""---""")
+    time.sleep(5)
 
 for fisherman in st.session_state['fishermen']:
     # fisherman.policy = lambda: action[fisherman.fisherman_id]
@@ -89,14 +92,14 @@ for fisherman in st.session_state['fishermen']:
 
 for pond in st.session_state['ponds']:
     pond_state = {'pond_id': pond.pond_id, 
-        'turn': st.session_state['turn'], 
+        'step_no': st.session_state['step_no'], 
         'fish_supply': pond.fish_supply
     }
     st.session_state['ponds_supply'].append(pond_state)
     pond.breed_fish()
 
-st.session_state['turn'] += 1
-if st.session_state['turn'] <= n_turns:
+st.session_state['step_no'] += 1
+if st.session_state['step_no'] <= n_steps:
     st.rerun()
 
 fishermen_data = []
@@ -107,4 +110,4 @@ df_fishermen = pd.DataFrame(fishermen_data)
 df_ponds = pd.DataFrame(st.session_state['ponds_supply'])
 st.plotly_chart(px.histogram(df_fishermen, x='fish_caught'))
 st.metric('Average number of fish caught', df_fishermen['fish_caught'].mean().round(2))
-st.plotly_chart(px.line(df_ponds, x='turn', y='fish_supply', color='pond_id'))
+st.plotly_chart(px.line(df_ponds, x='step_no', y='fish_supply', color='pond_id'))
