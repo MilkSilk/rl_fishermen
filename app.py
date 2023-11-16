@@ -71,17 +71,17 @@ def render_pond(pond_id, fisherman_col1, pond_col, fisherman_col2):
 fisherman_col1, pond_col1, fisherman_col2, _, \
     fisherman_col3, pond_col2, fisherman_col4 = st.columns([1, 3, 1, 1, 1, 3, 1])
 
-if st.session_state['turn'] % (n_turns // 1) == 0 or st.session_state['turn'] > n_turns:
-    st.text(st.session_state['turn'])
-    fisherman_col1, pond_col1, fisherman_col2, _, \
-        fisherman_col3, pond_col2, fisherman_col4 = st.columns([1, 3, 1, 1, 1, 3, 1])
-    render_pond(0, fisherman_col1, pond_col1, fisherman_col2)
-    render_pond(1, fisherman_col3, pond_col2, fisherman_col4)
+# if st.session_state['turn'] % (n_turns // 1) == 0 or st.session_state['turn'] > n_turns:
+#     st.text(st.session_state['turn'])
+#     fisherman_col1, pond_col1, fisherman_col2, _, \
+#         fisherman_col3, pond_col2, fisherman_col4 = st.columns([1, 3, 1, 1, 1, 3, 1])
+#     render_pond(0, fisherman_col1, pond_col1, fisherman_col2)
+#     render_pond(1, fisherman_col3, pond_col2, fisherman_col4)
 
-    render_pond(2, fisherman_col1, pond_col1, fisherman_col2)
-    render_pond(3, fisherman_col3, pond_col2, fisherman_col4)
-    st.markdown("""---""")
-    time.sleep(5)
+#     render_pond(2, fisherman_col1, pond_col1, fisherman_col2)
+#     render_pond(3, fisherman_col3, pond_col2, fisherman_col4)
+#     st.markdown("""---""")
+#     time.sleep(5)
 
 for fisherman in st.session_state['fishermen']:
     # fisherman.policy = lambda: action[fisherman.fisherman_id]

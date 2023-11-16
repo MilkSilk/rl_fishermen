@@ -13,12 +13,13 @@ class Fisherman:
     def action(self):
         action = self.policy()
         if action == 4:
-            return
+            self.pond = None
+            self.caught_fish = 0
         else:
             self.pond = self.ponds[action]
             fisherman_luck = random.random()
             self.caught_fish = self.pond.serve_fisherman(fisherman_luck)
-            self.fish += self.caught_fish
+        self.fish += self.caught_fish
 
     def render_fisherman(self, pond_to_render_at, container=st):
         if self.pond == pond_to_render_at:

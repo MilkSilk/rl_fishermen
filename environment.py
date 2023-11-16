@@ -18,7 +18,8 @@ class FishingEnv(gym.Env):
 
     def step(self, action):
         for fisherman in self.fishermen:
-            fisherman.policy = lambda: random.randint(0, 4)# action[fisherman.fisherman_id]
+            # fisherman.policy = lambda: action[fisherman.fisherman_id] 
+            fisherman.policy = lambda: random.randint(0, 4)
             fisherman.action()
         for pond in self.ponds:
             pond.breed_fish()
@@ -26,16 +27,16 @@ class FishingEnv(gym.Env):
         reward = sum([fisherman.caught_fish for fisherman in self.fishermen])
         done = False
         n_fish_in_ponds = sum([pond.fish_supply for pond in self.ponds])
-        end_condition = n_fish_in_ponds == 0 or self.episode_no == 50 # No fish in ponds or 50th episode
+        end_condition = n_fish_in_ponds == 0 or self.step_no == 50 # No fish in ponds or 50th episode
         if end_condition:
             done = True
         truncated = False
         info = {}
-        self.episode_no += 1
+        self.step_no += 1
         return self.state, reward, done, truncated, info
 
     def reset(self, seed=None, options=None):
-        self.episode_no = 0
+        self.step_no = 0
         self.ponds = []
         for i in range(4):
             initial_fish_supply = random.randint(9, 21)
@@ -58,10 +59,37 @@ class FishingEnv(gym.Env):
     def render():
         pass
 
+def run_step(env_config):
+    trainer = PPO(config=env_config, env=FishingEnv)
+
+    trainer.load_checkpoint("C:\Users\jacek.jankowiak\ray_results\PPO_FishingEnv_2023-11-16_08-12-01thvfkqm2")
+    try:
+        print(trainer.state)
+        action = trainer.compute_single_action(observation=trainer.state)
+        print(action)
+        state, reward, done, truncated, info = trainer.step(action)
+        print(state)
+        print(reward)
+    except Exception as e:
+        print(e)
+
+def train(env_config):
+    trainer = PPO(config=env_config, env=FishingEnv)
+    
+    print('Starting training')
+    try:
+        for i in range(100):
+            results = trainer.train()
+            print(f"Iter: {i}; avg. reward={results['episode_reward_mean']}")
+    except KeyboardInterrupt:
+        pass
+    trainer.save()
+
+
 if __name__ == "__main__":
     ray.init(num_gpus=0)
     ray.rllib.utils.check_env(FishingEnv(config={}))
-    config = {
+    env_config = {
         # Env class to use (here: gym.Env sub-class from above).
         "env": FishingEnv,
         "rollout_fragment_length": 128,
@@ -73,32 +101,5 @@ if __name__ == "__main__":
         # Parallelize environment rollouts.
         "num_workers": 1,
     }
-    trainer = PPO(config=config, env=FishingEnv)
-
-    # stop = {
-    #     "training_iteration": 5,
-    #     "timesteps_total": 1_000,
-    #     "episode_reward_mean": 2.75,
-    # }
-    #
-    # print("Training policy until desired reward/timesteps/iterations. ...")
-    # results = tune.run(
-    #     "PPO",
-    #     config=config,
-    #     stop=stop,
-    #     verbose=2,
-    #     checkpoint_freq=1,
-    #     checkpoint_at_end=True,
-    # )
-
-
-    # trainer.load_checkpoint("C:/Users/Jacek/ray_results/PPOTrainer_HuntEnv_2022-03-16_21-20-42n5ue1jq4/checkpoint_000005/checkpoint-5")
-    print('Starting training')
-    try:
-        for i in range(10):
-            results = trainer.train()
-            print(f"Iter: {i}; avg. reward={results['episode_reward_mean']}")
-    except KeyboardInterrupt:
-        pass
-    trainer.save()
-    # trainer.evaluate()
+    train(env_config = env_config)
+    run_step(env_config = env_config)
