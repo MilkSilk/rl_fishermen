@@ -18,8 +18,8 @@ class FishingEnv(gym.Env):
 
     def step(self, action):
         for fisherman in self.fishermen:
-            # fisherman.policy = lambda: action[fisherman.fisherman_id] 
-            fisherman.policy = lambda: random.randint(0, 4)
+            fisherman.policy = lambda: action[fisherman.fisherman_id] 
+            # fisherman.policy = lambda: random.randint(0, 4)
             fisherman.action()
         for pond in self.ponds:
             pond.breed_fish()
@@ -59,31 +59,56 @@ class FishingEnv(gym.Env):
     def render():
         pass
 
-def run_step(env_config):
+def run_episode(env_config):
     trainer = PPO(config=env_config, env=FishingEnv)
 
-    trainer.load_checkpoint("C:\Users\jacek.jankowiak\ray_results\PPO_FishingEnv_2023-11-16_08-12-01thvfkqm2")
-    try:
-        print(trainer.state)
-        action = trainer.compute_single_action(observation=trainer.state)
-        print(action)
-        state, reward, done, truncated, info = trainer.step(action)
-        print(state)
-        print(reward)
-    except Exception as e:
-        print(e)
+    env = FishingEnv(config=env_config)
+    trainer.load_checkpoint("C:\Users\JACEK~1.JAN\AppData\Local\Temp\tmpbyeas0sk")
+    done = False
+    ponds_supply_info = []
+    step_no = 0
+    while not done:
+        action = trainer.compute_single_action(observation=env.state)
+        state, reward, done, truncated, info = env.step(action)
+        for pond in env.ponds:
+            pond_state = {
+                'pond_id': pond.pond_id,
+                'step_no': 'step_no',
+                'fish_supply': pond.fish_supply
+            }
+        ponds_supply_info.append(pond_state)
+        step_no += 1
+    fishermen_data = []
+    for fisherman in env.fishermen:
+        fishermen_data.append({'fisherman_id': fisherman.fisherman_id, 'fish_caught':fisherman.fish})
+    return fishermen_data, ponds_supply_info
+        
 
 def train(env_config):
     trainer = PPO(config=env_config, env=FishingEnv)
-    
+
     print('Starting training')
     try:
-        for i in range(100):
+        for i in range(500):
             results = trainer.train()
-            print(f"Iter: {i}; avg. reward={results['episode_reward_mean']}")
+            if i % 50 == 0:
+                print(f"Iter: {i}; avg. reward={results['episode_reward_mean']}")
+                save_result = trainer.save()
+                path_to_checkpoint = save_result.checkpoint.path
+                print(
+                    "An Algorithm checkpoint has been created inside directory: "
+                    f"'{path_to_checkpoint}'."
+                )
+                print()
+                print()
     except KeyboardInterrupt:
         pass
-    trainer.save()
+    save_result = trainer.save()
+    path_to_checkpoint = save_result.checkpoint.path
+    print(
+        "An Algorithm checkpoint has been created inside directory: "
+        f"'{path_to_checkpoint}'."
+    )
 
 
 if __name__ == "__main__":
@@ -93,7 +118,7 @@ if __name__ == "__main__":
         # Env class to use (here: gym.Env sub-class from above).
         "env": FishingEnv,
         "rollout_fragment_length": 128,
-        "train_batch_size": 128,
+        "train_batch_size": 1024,
         "num_gpus": 0,
         "num_gpus_per_worker": 0,
         # "framework": "tf",
@@ -102,4 +127,7 @@ if __name__ == "__main__":
         "num_workers": 1,
     }
     train(env_config = env_config)
-    run_step(env_config = env_config)
+    # for i in range(10):
+    #     print(i)
+    #     print()
+    #     run_step(env_config = env_config)

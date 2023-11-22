@@ -9,7 +9,9 @@ from pond import Pond
 # streamlit run app.py --server.port 8501 --server.runOnSave True
 debug = False
 n_steps = 50
-n_renders_per_episode = 0
+n_renders_per_episode = 1
+n_renders_per_episode -= 1
+
 
 if 'ponds' not in st.session_state:
     st.session_state['ponds'] = []
@@ -72,7 +74,7 @@ def render_pond(pond_id, fisherman_col1, pond_col, fisherman_col2):
 fisherman_col1, pond_col1, fisherman_col2, _, \
     fisherman_col3, pond_col2, fisherman_col4 = st.columns([1, 3, 1, 1, 1, 3, 1])
 
-if (n_renders_per_episode != 0) and \
+if ((n_renders_per_episode == 0) and (st.session_state['step_no'] == n_renders_per_episode == 0)) or \
    (st.session_state['step_no'] % (n_steps // n_renders_per_episode) == 0) or \
    (st.session_state['step_no'] > n_steps):
     st.text(st.session_state['step_no'])
