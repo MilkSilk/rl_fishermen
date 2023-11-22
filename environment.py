@@ -136,8 +136,6 @@ if __name__ == "__main__":
     env, fishermen_data, ponds_supply_info = run_episode(env_config = env_config)
     df_fishermen = pd.DataFrame(fishermen_data)
     df_ponds = pd.DataFrame(ponds_supply_info)
-    print(fishermen_data)
-    print(ponds_supply_info)
     hist_fig = px.histogram(df_fishermen, x='fish_caught')
     print('Average number of fish caught', df_fishermen['fish_caught'].mean().round(2))
     ponds_fig = px.line(df_ponds, x='step_no', y='fish_supply', color='pond_id')
