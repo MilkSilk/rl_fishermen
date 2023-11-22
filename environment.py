@@ -78,15 +78,15 @@ def run_episode(env_config):
         for pond in env.ponds:
             pond_state = {
                 'pond_id': pond.pond_id,
-                'step_no': 'step_no',
+                'step_no': step_no,
                 'fish_supply': pond.fish_supply
             }
-        ponds_supply_info.append(pond_state)
+            ponds_supply_info.append(pond_state)
         step_no += 1
     fishermen_data = []
     for fisherman in env.fishermen:
         fishermen_data.append({'fisherman_id': fisherman.fisherman_id, 'fish_caught':fisherman.fish})
-    return fishermen_data, ponds_supply_info
+    return env, fishermen_data, ponds_supply_info
         
 
 def train(env_config):
@@ -132,9 +132,17 @@ if __name__ == "__main__":
         "num_workers": 1,
     }
     # train(env_config = env_config)
-    fishermen_data, ponds_supply_info = run_episode(env_config = env_config)
+
+    env, fishermen_data, ponds_supply_info = run_episode(env_config = env_config)
     df_fishermen = pd.DataFrame(fishermen_data)
     df_ponds = pd.DataFrame(ponds_supply_info)
-    px.histogram(df_fishermen, x='fish_caught')
+    print(fishermen_data)
+    print(ponds_supply_info)
+    hist_fig = px.histogram(df_fishermen, x='fish_caught')
     print('Average number of fish caught', df_fishermen['fish_caught'].mean().round(2))
-    px.line(df_ponds, x='step_no', y='fish_supply', color='pond_id')
+    ponds_fig = px.line(df_ponds, x='step_no', y='fish_supply', color='pond_id')
+
+    import plotly
+    plotly.offline.plot(hist_fig, filename='histogram.html')
+    plotly.offline.plot(ponds_fig, filename='ponds.html')
+
