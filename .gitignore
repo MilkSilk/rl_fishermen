@@ -3,3 +3,4 @@ mock-up.png
 *.pycache
 *.pyc
 .streamlit
+*.html
