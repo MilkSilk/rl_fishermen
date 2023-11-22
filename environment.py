@@ -1,12 +1,16 @@
+# General DS
 import numpy as np
 import pandas as pd
-import ray
+import plotly.express as px
 import random
-# import tensorflow as tf
+
+# RL
+import ray
 import gymnasium as gym
 from gymnasium.spaces import MultiDiscrete
 from ray.rllib.algorithms.ppo import PPO
 
+# App modules
 from fisherman import Fisherman
 from pond import Pond
 
@@ -63,7 +67,8 @@ def run_episode(env_config):
     trainer = PPO(config=env_config, env=FishingEnv)
 
     env = FishingEnv(config=env_config)
-    trainer.load_checkpoint("C:\Users\JACEK~1.JAN\AppData\Local\Temp\tmpbyeas0sk")
+    checkpoint_location = "C:/Users/JACEK~1.JAN/AppData/Local/Temp/tmpbyeas0sk"
+    trainer.load_checkpoint(checkpoint_location)
     done = False
     ponds_supply_info = []
     step_no = 0
@@ -126,8 +131,10 @@ if __name__ == "__main__":
         # Parallelize environment rollouts.
         "num_workers": 1,
     }
-    train(env_config = env_config)
-    # for i in range(10):
-    #     print(i)
-    #     print()
-    #     run_step(env_config = env_config)
+    # train(env_config = env_config)
+    fishermen_data, ponds_supply_info = run_episode(env_config = env_config)
+    df_fishermen = pd.DataFrame(fishermen_data)
+    df_ponds = pd.DataFrame(ponds_supply_info)
+    px.histogram(df_fishermen, x='fish_caught')
+    print('Average number of fish caught', df_fishermen['fish_caught'].mean().round(2))
+    px.line(df_ponds, x='step_no', y='fish_supply', color='pond_id')
