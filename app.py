@@ -12,9 +12,8 @@ from environment import FishingEnv
 # streamlit run app.py --server.port 8501 --server.runOnSave True
 debug = False
 n_steps = 50
-n_renders_per_episode = 1
-n_renders_per_episode -= 1
-ray.init(num_gpus=0)
+n_extra_renders_per_episode = 2
+# ray.init(num_gpus=0)
 env_config = {
     # Env class to use (here: gym.Env sub-class from above).
     "env": FishingEnv,
@@ -57,8 +56,6 @@ if 'trainer' not in st.session_state:
     st.session_state['trainer'].load_checkpoint(checkpoint_location)
 if 'env' not in st.session_state:
     st.session_state['env'] = FishingEnv(config=env_config)
-if 'done' not in st.session_state:
-    st.session_state['done'] = False
 
 st.title('Reinforcement learning agents showcase')
 st.markdown('</br></br></br>', unsafe_allow_html=True)
@@ -98,10 +95,10 @@ def render_pond(pond_id, fisherman_col1, pond_col, fisherman_col2):
 fisherman_col1, pond_col1, fisherman_col2, _, \
     fisherman_col3, pond_col2, fisherman_col4 = st.columns([1, 3, 1, 1, 1, 3, 1])
 
-if ((n_renders_per_episode == 0) and (st.session_state['step_no'] == n_renders_per_episode == 0)) or \
-   (st.session_state['step_no'] % (n_steps // n_renders_per_episode) == 0) or \
-   (st.session_state['step_no'] > n_steps):
-    st.text(st.session_state['step_no'])
+if (st.session_state['step_no'] != 0) and ((st.session_state['step_no'] == 1) or \
+   (st.session_state['step_no'] % (n_steps // n_extra_renders_per_episode) == 0) or \
+   (st.session_state['step_no'] > n_steps)):
+    st.markdown(f"### Environment state on step {st.session_state['step_no']}")
     fisherman_col1, pond_col1, fisherman_col2, _, \
         fisherman_col3, pond_col2, fisherman_col4 = st.columns([1, 3, 1, 1, 1, 3, 1])
     render_pond(0, fisherman_col1, pond_col1, fisherman_col2)
@@ -113,8 +110,10 @@ if ((n_renders_per_episode == 0) and (st.session_state['step_no'] == n_renders_p
     time.sleep(5)
 
 def run_rl_fishermen():
+    st.session_state['ponds'] = st.session_state['env'].ponds
+    st.session_state['fishermen'] = st.session_state['env'].fishermen
     action = st.session_state['trainer'].compute_single_action(observation=st.session_state['env'].state)
-    state, reward, st.session_state['done'], truncated, info = st.session_state['env'].step(action)
+    state, reward, done, truncated, info = st.session_state['env'].step(action)
     for pond in st.session_state['env'].ponds:
         pond_state = {
             'pond_id': pond.pond_id,
@@ -126,7 +125,8 @@ def run_rl_fishermen():
     fishermen_data = []
     for fisherman in st.session_state['env'].fishermen:
         fishermen_data.append({'fisherman_id': fisherman.fisherman_id, 'fish_caught':fisherman.fish})
-    if not st.session_state['done']:
+    st.session_state['step_no'] += 1
+    if st.session_state['step_no'] <= n_steps:
         st.rerun()
     return fishermen_data
 
@@ -151,8 +151,8 @@ def run_naive_fishermen():
         fishermen_data.append({'fisherman_id': fisherman.fisherman_id, 'fish_caught':fisherman.fish})
     return fishermen_data
 
-# fishermen_data = run_rl_fishermen()
-fishermen_data = run_naive_fishermen()
+fishermen_data = run_rl_fishermen()
+# fishermen_data = run_naive_fishermen()
 
 df_fishermen = pd.DataFrame(fishermen_data)
 df_ponds = pd.DataFrame(st.session_state['ponds_supply'])
