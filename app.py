@@ -3,15 +3,30 @@ import random
 import time
 import pandas as pd
 import plotly.express as px
+import ray
+from ray.rllib.algorithms.ppo import PPO
 
 from fisherman import Fisherman
 from pond import Pond
+from environment import FishingEnv
 # streamlit run app.py --server.port 8501 --server.runOnSave True
 debug = False
 n_steps = 50
 n_renders_per_episode = 1
 n_renders_per_episode -= 1
-
+ray.init(num_gpus=0)
+env_config = {
+    # Env class to use (here: gym.Env sub-class from above).
+    "env": FishingEnv,
+    "rollout_fragment_length": 128,
+    "train_batch_size": 1024,
+    "num_gpus": 0,
+    "num_gpus_per_worker": 0,
+    # "framework": "tf",
+    "create_env_on_driver": True,
+    # Parallelize environment rollouts.
+    "num_workers": 1,
+}
 
 if 'ponds' not in st.session_state:
     st.session_state['ponds'] = []
@@ -35,6 +50,15 @@ if 'step_no' not in st.session_state:
     st.session_state['step_no'] = 0
 if 'ponds_supply' not in st.session_state:
     st.session_state['ponds_supply'] = []
+
+if 'trainer' not in st.session_state:
+    st.session_state['trainer'] = PPO(config=env_config, env=FishingEnv)
+    checkpoint_location = "C:/Users/JACEK~1.JAN/AppData/Local/Temp/tmpbyeas0sk"
+    st.session_state['trainer'].load_checkpoint(checkpoint_location)
+if 'env' not in st.session_state:
+    st.session_state['env'] = FishingEnv(config=env_config)
+if 'done' not in st.session_state:
+    st.session_state['done'] = False
 
 st.title('Reinforcement learning agents showcase')
 st.markdown('</br></br></br>', unsafe_allow_html=True)
@@ -88,25 +112,47 @@ if ((n_renders_per_episode == 0) and (st.session_state['step_no'] == n_renders_p
     st.markdown("""---""")
     time.sleep(5)
 
-for fisherman in st.session_state['fishermen']:
-    # fisherman.policy = lambda: action[fisherman.fisherman_id]
-    fisherman.action()
+def run_rl_fishermen():
+    action = st.session_state['trainer'].compute_single_action(observation=st.session_state['env'].state)
+    state, reward, st.session_state['done'], truncated, info = st.session_state['env'].step(action)
+    for pond in st.session_state['env'].ponds:
+        pond_state = {
+            'pond_id': pond.pond_id,
+            'step_no': st.session_state['step_no'],
+            'fish_supply': pond.fish_supply
+        }
+        st.session_state['ponds_supply'].append(pond_state)
 
-for pond in st.session_state['ponds']:
-    pond_state = {'pond_id': pond.pond_id, 
-        'step_no': st.session_state['step_no'], 
-        'fish_supply': pond.fish_supply
-    }
-    st.session_state['ponds_supply'].append(pond_state)
-    pond.breed_fish()
+    fishermen_data = []
+    for fisherman in st.session_state['env'].fishermen:
+        fishermen_data.append({'fisherman_id': fisherman.fisherman_id, 'fish_caught':fisherman.fish})
+    if not st.session_state['done']:
+        st.rerun()
+    return fishermen_data
 
-st.session_state['step_no'] += 1
-if st.session_state['step_no'] <= n_steps:
-    st.rerun()
+def run_naive_fishermen():
+    for fisherman in st.session_state['fishermen']:
+        # fisherman.policy = lambda: action[fisherman.fisherman_id]
+        fisherman.action()
 
-fishermen_data = []
-for fisherman in st.session_state['fishermen']:
-    fishermen_data.append({'fisherman_id': fisherman.fisherman_id, 'fish_caught':fisherman.fish})
+    for pond in st.session_state['ponds']:
+        pond_state = {'pond_id': pond.pond_id, 
+            'step_no': st.session_state['step_no'], 
+            'fish_supply': pond.fish_supply
+        }
+        st.session_state['ponds_supply'].append(pond_state)
+        pond.breed_fish()
+
+    st.session_state['step_no'] += 1
+    if st.session_state['step_no'] <= n_steps:
+        st.rerun()
+    fishermen_data = []
+    for fisherman in st.session_state['fishermen']:
+        fishermen_data.append({'fisherman_id': fisherman.fisherman_id, 'fish_caught':fisherman.fish})
+    return fishermen_data
+
+# fishermen_data = run_rl_fishermen()
+fishermen_data = run_naive_fishermen()
 
 df_fishermen = pd.DataFrame(fishermen_data)
 df_ponds = pd.DataFrame(st.session_state['ponds_supply'])

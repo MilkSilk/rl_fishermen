@@ -131,6 +131,7 @@ if __name__ == "__main__":
         # Parallelize environment rollouts.
         "num_workers": 1,
     }
+
     # train(env_config = env_config)
 
     env, fishermen_data, ponds_supply_info = run_episode(env_config = env_config)
