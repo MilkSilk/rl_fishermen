@@ -3,17 +3,15 @@ import random
 import time
 import pandas as pd
 import plotly.express as px
-import ray
 from ray.rllib.algorithms.ppo import PPO
 
 from fisherman import Fisherman
 from pond import Pond
 from environment import FishingEnv
-# streamlit run app.py --server.port 8501 --server.runOnSave True
+
 debug = False
 n_steps = 50
 n_extra_renders_per_episode = 2
-# ray.init(num_gpus=0)
 env_config = {
     # Env class to use (here: gym.Env sub-class from above).
     "env": FishingEnv,
@@ -52,7 +50,7 @@ if 'ponds_supply' not in st.session_state:
 
 if 'trainer' not in st.session_state:
     st.session_state['trainer'] = PPO(config=env_config, env=FishingEnv)
-    checkpoint_location = "C:/Users/JACEK~1.JAN/AppData/Local/Temp/tmpbyeas0sk"
+    checkpoint_location = "models\checkpoint-1"
     st.session_state['trainer'].load_checkpoint(checkpoint_location)
 if 'env' not in st.session_state:
     st.session_state['env'] = FishingEnv(config=env_config)
@@ -132,7 +130,6 @@ def run_rl_fishermen():
 
 def run_naive_fishermen():
     for fisherman in st.session_state['fishermen']:
-        # fisherman.policy = lambda: action[fisherman.fisherman_id]
         fisherman.action()
 
     for pond in st.session_state['ponds']:

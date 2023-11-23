@@ -67,7 +67,7 @@ def run_episode(env_config):
     trainer = PPO(config=env_config, env=FishingEnv)
 
     env = FishingEnv(config=env_config)
-    checkpoint_location = "C:/Users/JACEK~1.JAN/AppData/Local/Temp/tmpbyeas0sk"
+    checkpoint_location = "models\checkpoint-1"
     trainer.load_checkpoint(checkpoint_location)
     done = False
     ponds_supply_info = []
@@ -91,7 +91,7 @@ def run_episode(env_config):
 
 def train(env_config):
     trainer = PPO(config=env_config, env=FishingEnv)
-    checkpoint_location = "C:/Users/JACEK~1.JAN/AppData/Local/Temp/tmpbyeas0sk"
+    checkpoint_location = "models\checkpoint-1"
     trainer.load_checkpoint(checkpoint_location)
     print('Starting training')
     try:
