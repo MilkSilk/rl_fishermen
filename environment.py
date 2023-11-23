@@ -91,7 +91,8 @@ def run_episode(env_config):
 
 def train(env_config):
     trainer = PPO(config=env_config, env=FishingEnv)
-
+    checkpoint_location = "C:/Users/JACEK~1.JAN/AppData/Local/Temp/tmpbyeas0sk"
+    trainer.load_checkpoint(checkpoint_location)
     print('Starting training')
     try:
         for i in range(500):
